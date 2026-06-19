@@ -10,10 +10,6 @@ export type IconConfig = {
    * Path to the Android source image.
    */
   android?: string;
-  /**
-   * Whether iOS should treat the icon as already rendered (no gloss).
-   */
-  prerendered?: boolean;
 };
 
 /**

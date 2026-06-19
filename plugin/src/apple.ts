@@ -21,7 +21,6 @@ const APPLE_ASSET_GROUP = "AppIconVariants";
 
 type PlistIconEntry = {
   CFBundleIconFiles: string[];
-  UIPrerenderedIcon: boolean;
 };
 
 /**
@@ -107,7 +106,6 @@ export const withAppleAlternateIcons: ConfigPlugin<ResolvedIconProps> = (
       if (!icon.ios) return;
       const entry: PlistIconEntry = {
         CFBundleIconFiles: [appleIconBaseName(iconKey, variant)],
-        UIPrerenderedIcon: !!icon.prerendered,
       };
       if (variant.target) {
         (iconsByTarget[variant.target] ??= {})[iconKey] = entry;

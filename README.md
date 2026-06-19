@@ -31,15 +31,14 @@ Add the plugin to your `app.json` config and declare your icons. Each icon is ju
 }
 ```
 
-The same image is used for both platforms. To use a different image per platform (or mark an iOS icon as prerendered), pass an object instead:
+The same image is used for both platforms. To use a different image per platform, pass an object instead:
 
 ```json
 {
   "red": "./assets/icons/red.png",
   "blue": {
     "ios": "./assets/icons/blue-ios.png",
-    "android": "./assets/icons/blue-android.png",
-    "prerendered": true
+    "android": "./assets/icons/blue-android.png"
   }
 }
 ```

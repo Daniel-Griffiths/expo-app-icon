@@ -15,8 +15,8 @@ describe("normalizeIconSet", () => {
   });
 
   it("keeps the explicit per-platform object form", () => {
-    expect(normalizeIconSet({ red: { ios: "a.png", android: "b.png", prerendered: true } })).toEqual({
-      red: { ios: "a.png", android: "b.png", prerendered: true },
+    expect(normalizeIconSet({ red: { ios: "a.png", android: "b.png" } })).toEqual({
+      red: { ios: "a.png", android: "b.png" },
     });
   });
 
