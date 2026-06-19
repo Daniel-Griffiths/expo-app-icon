@@ -3,7 +3,7 @@
 </div>
   
 # Expo App Icon
-Programmatically change your app's icon at runtime in Expo, with proper Android adaptive-icon support.
+Programmatically change your app's icon at runtime in Expo.
 
 ## Install
 
@@ -31,7 +31,7 @@ Add the plugin to your `app.json` config and declare your icons. Each icon is ju
 }
 ```
 
-The same image is used for both platforms. To use a different image per platform, pass an object instead:
+The same image is used for both platforms by default. To use a different image per platform, pass an object instead:
 
 ```json
 {
