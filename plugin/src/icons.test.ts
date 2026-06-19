@@ -14,9 +14,25 @@ describe("normalizeIconSet", () => {
     expect(normalizeIconSet(undefined)).toEqual({});
   });
 
-  it("passes through a keyed icon map unchanged", () => {
-    const input = { red: { ios: "a.png", android: "b.png" } };
-    expect(normalizeIconSet(input)).toBe(input);
+  it("keeps the explicit per-platform object form", () => {
+    expect(normalizeIconSet({ red: { ios: "a.png", android: "b.png", prerendered: true } })).toEqual({
+      red: { ios: "a.png", android: "b.png", prerendered: true },
+    });
+  });
+
+  it("expands a string shorthand to both platforms", () => {
+    expect(normalizeIconSet({ red: "./assets/red.png" })).toEqual({
+      red: { ios: "./assets/red.png", android: "./assets/red.png" },
+    });
+  });
+
+  it("mixes shorthand and object entries", () => {
+    expect(
+      normalizeIconSet({ red: "./red.png", blue: { ios: "./blue-ios.png" } })
+    ).toEqual({
+      red: { ios: "./red.png", android: "./red.png" },
+      blue: { ios: "./blue-ios.png" },
+    });
   });
 
   it("expands a bare list into keyed entries shared across platforms", () => {

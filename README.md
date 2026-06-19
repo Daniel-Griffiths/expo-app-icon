@@ -13,7 +13,7 @@ npx expo install expo-app-icon
 
 ## Configure
 
-Add the plugin to your `app.json` config and declare your icons. Each icon needs an `ios` and/or `android` image path:
+Add the plugin to your `app.json` config and declare your icons. Each icon is just a key and an image path:
 
 ```json
 {
@@ -22,17 +22,24 @@ Add the plugin to your `app.json` config and declare your icons. Each icon needs
       [
         "expo-app-icon",
         {
-          "red": {
-            "ios": "./assets/icons/red.png",
-            "android": "./assets/icons/red.png"
-          },
-          "blue": {
-            "ios": "./assets/icons/blue.png",
-            "android": "./assets/icons/blue.png"
-          }
+          "red": "./assets/icons/red.png",
+          "blue": "./assets/icons/blue.png"
         }
       ]
     ]
+  }
+}
+```
+
+The same image is used for both platforms. To use a different image per platform (or mark an iOS icon as prerendered), pass an object instead:
+
+```json
+{
+  "red": "./assets/icons/red.png",
+  "blue": {
+    "ios": "./assets/icons/blue-ios.png",
+    "android": "./assets/icons/blue-android.png",
+    "prerendered": true
   }
 }
 ```

@@ -38,7 +38,14 @@ export function normalizeIconSet(input: IconPluginInput): IconSet {
       return acc;
     }, {});
   }
-  return input ?? {};
+  if (!input) return {};
+  return Object.fromEntries(
+    Object.entries(input).map(([key, value]) => [
+      key,
+      // String shorthand: one image path used for both platforms.
+      typeof value === "string" ? { ios: value, android: value } : value,
+    ])
+  );
 }
 
 /**

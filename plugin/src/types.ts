@@ -17,15 +17,22 @@ export type IconConfig = {
 };
 
 /**
- * Map of icon key → icon config, as used everywhere internally.
+ * Map of icon key → icon config, as used everywhere internally (always the
+ * fully-resolved object form).
  */
 export type IconSet = Record<string, IconConfig>;
 
 /**
- * What the plugin accepts from the app config: a keyed map, a bare list of
- * image paths, or nothing.
+ * An icon as declared by the user: either a single image path used for both
+ * platforms (`"red": "./assets/red.png"`) or the explicit per-platform object.
  */
-export type IconPluginInput = IconSet | string[] | void;
+export type IconInput = string | IconConfig;
+
+/**
+ * What the plugin accepts from the app config: a keyed map (string shorthand or
+ * object per icon), a bare list of image paths, or nothing.
+ */
+export type IconPluginInput = Record<string, IconInput> | string[] | void;
 
 /**
  * Device family an Apple icon variant targets.
