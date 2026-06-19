@@ -35,10 +35,19 @@ The same image is used for both platforms by default. To use a different image p
 
 ```json
 {
-  "red": "./assets/icons/red.png",
-  "blue": {
-    "ios": "./assets/icons/blue-ios.png",
-    "android": "./assets/icons/blue-android.png"
+  "expo": {
+    "plugins": [
+      [
+        "expo-app-icon",
+        {
+          "red": "./assets/icons/red.png",
+          "blue": {
+            "ios": "./assets/icons/blue-ios.png",
+            "android": "./assets/icons/blue-android.png"
+          }
+        }
+      ]
+    ]
   }
 }
 ```
