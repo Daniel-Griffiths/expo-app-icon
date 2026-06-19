@@ -1,10 +1,4 @@
 /**
- * Arbitrary, JSON-serialisable metadata a consumer attaches to an icon (e.g.
- * label, description, isPremium). Surfaced at runtime via getAvailableIcons().
- */
-export type IconMetadata = Record<string, unknown>;
-
-/**
  * A normalized icon entry as used everywhere internally (the `image`
  * convenience has been expanded to `ios`/`android`).
  */
@@ -17,10 +11,6 @@ export type IconConfig = {
    * Path to the Android source image.
    */
   android?: string;
-  /**
-   * Display/behaviour metadata, passed through to runtime untouched.
-   */
-  metadata?: IconMetadata;
 };
 
 /**

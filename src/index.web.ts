@@ -1,8 +1,6 @@
 import type { DynamicAppIconRegistry } from "./types";
 import type { UseAppIcon } from "./useAppIcon";
 
-export { getAvailableIcons } from "./icons-data";
-export type { AppIconEntry } from "./icons-data";
 export type { UseAppIcon } from "./useAppIcon";
 
 export type IconName = DynamicAppIconRegistry["IconName"];

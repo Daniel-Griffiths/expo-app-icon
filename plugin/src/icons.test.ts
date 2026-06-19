@@ -47,20 +47,6 @@ describe("normalizeIconSet", () => {
     ).toEqual({ red: { ios: "./red.png", android: "./red-a.png" } });
   });
 
-  it("carries metadata through untouched", () => {
-    expect(
-      normalizeIconSet({
-        red: { image: "./red.png", metadata: { label: "Red", isPremium: true } },
-      })
-    ).toEqual({
-      red: {
-        ios: "./red.png",
-        android: "./red.png",
-        metadata: { label: "Red", isPremium: true },
-      },
-    });
-  });
-
   it("expands a bare list into keyed entries shared across platforms", () => {
     expect(normalizeIconSet(["a.png", "b.png"])).toEqual({
       "0": { ios: "a.png", android: "a.png" },

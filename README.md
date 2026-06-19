@@ -31,16 +31,12 @@ Add the plugin to your `app.json` config and declare your icons. Each icon is ju
 }
 ```
 
-The same image is used for both platforms. For per-platform images, or to attach
-metadata (any key/value you want — labels, descriptions, premium flags, …), use the object form:
+The same image is used for both platforms. For per-platform images, use the object form:
 
 ```json
 {
   "red": "./assets/icons/red.png",
-  "blue": {
-    "image": "./assets/icons/blue.png",
-    "metadata": { "label": "Blue", "description": "Cool blue", "isPremium": true }
-  },
+  "blue": { "image": "./assets/icons/blue.png" },
   "split": {
     "ios": "./assets/icons/split-ios.png",
     "android": "./assets/icons/split-android.png"
@@ -49,7 +45,6 @@ metadata (any key/value you want — labels, descriptions, premium flags, …), 
 ```
 
 - `image` sets both platforms; `ios` / `android` override it per platform.
-- `metadata` is passed straight through to `getAvailableIcons()` at runtime (it's ignored when generating the icons).
 
 Then create a new build (the plugin runs during prebuild):
 
@@ -59,19 +54,19 @@ npx expo prebuild --clean
 
 ## Usage
 
-Build a picker with the `useAppIcon` hook and `getAvailableIcons` — no per-app boilerplate or persistence needed (the native module is the source of truth):
+Switch icons at runtime with the `useAppIcon` hook — no per-app persistence needed (the native module is the source of truth). `IconName` is typed to your configured keys:
 
 ```tsx
-import { useAppIcon, getAvailableIcons } from "expo-app-icon";
+import { useAppIcon, type IconName } from "expo-app-icon";
 
-type Meta = { label: string; description?: string; isPremium?: boolean };
+const ICONS: IconName[] = ["red", "blue"];
 
 function IconPicker() {
   const { icon, setIcon, isDefault } = useAppIcon();
 
-  return getAvailableIcons<Meta>().map(({ name, metadata }) => (
+  return ICONS.map((name) => (
     <Pressable key={name} onPress={() => setIcon(name)}>
-      <Text>{metadata.label}{icon === name ? " ✓" : ""}</Text>
+      <Text>{name}{icon === name ? " ✓" : ""}</Text>
     </Pressable>
   ));
 }
@@ -80,7 +75,6 @@ function IconPicker() {
 - `icon` — the current icon key, or `null` for the default.
 - `setIcon(name | null)` — switch icons; pass `null` to reset to the default. (The iOS timing fix is built in.)
 - `isDefault` / `isSupported` — handy flags (`isSupported` is `false` on web).
-- `getAvailableIcons<Meta>()` — the configured icons + their metadata, typed to `Meta`.
 
 Or call the underlying functions directly:
 
