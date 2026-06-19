@@ -1,8 +1,9 @@
 <div align="center">
   <img src="https://raw.githubusercontent.com/Daniel-Griffiths/expo-app-icon/master/assets/icon.png" width="128" alt="expo-app-icon" />
-  <h1>expo-app-icon</h1>
-  <p>Programmatically change your app's icon at runtime in Expo, with proper Android adaptive-icon support.</p>
 </div>
+  
+# Expo App Icon
+Programmatically change your app's icon at runtime in Expo, with proper Android adaptive-icon support.
 
 ## Install
 
@@ -12,7 +13,7 @@ npx expo install expo-app-icon
 
 ## Configure
 
-Add the plugin to your app config and declare your icons. Each icon needs an `ios` and/or `android` image path:
+Add the plugin to your `app.json` config and declare your icons. Each icon needs an `ios` and/or `android` image path:
 
 ```json
 {
@@ -56,9 +57,3 @@ setAppIcon("red");
 // Reset back to the default icon
 setAppIcon(null);
 ```
-
-## Notes
-
-- Icon keys are the keys you define in the plugin config.
-- Android icons are generated as adaptive icons. Source images are scaled into the adaptive safe zone, so design your artwork edge-to-edge — it will be centered automatically.
-- Changing the icon on Android briefly closes and reopens the app.
