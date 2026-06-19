@@ -1,5 +1,12 @@
 /**
- * A single icon entry as declared in the plugin config.
+ * Arbitrary, JSON-serialisable metadata a consumer attaches to an icon (e.g.
+ * label, description, isPremium). Surfaced at runtime via getAvailableIcons().
+ */
+export type IconMetadata = Record<string, unknown>;
+
+/**
+ * A normalized icon entry as used everywhere internally (the `image`
+ * convenience has been expanded to `ios`/`android`).
  */
 export type IconConfig = {
   /**
@@ -10,6 +17,10 @@ export type IconConfig = {
    * Path to the Android source image.
    */
   android?: string;
+  /**
+   * Display/behaviour metadata, passed through to runtime untouched.
+   */
+  metadata?: IconMetadata;
 };
 
 /**
@@ -19,10 +30,19 @@ export type IconConfig = {
 export type IconSet = Record<string, IconConfig>;
 
 /**
- * An icon as declared by the user: either a single image path used for both
- * platforms (`"red": "./assets/red.png"`) or the explicit per-platform object.
+ * The object form a consumer may declare. Adds `image` as a convenience that
+ * sets both platforms (`ios`/`android` override it when present).
  */
-export type IconInput = string | IconConfig;
+export type IconInputObject = IconConfig & {
+  /** Single image used for both platforms (shorthand for ios + android). */
+  image?: string;
+};
+
+/**
+ * An icon as declared by the user: either a single image path used for both
+ * platforms (`"red": "./assets/red.png"`) or the explicit object form.
+ */
+export type IconInput = string | IconInputObject;
 
 /**
  * What the plugin accepts from the app config: a keyed map (string shorthand or

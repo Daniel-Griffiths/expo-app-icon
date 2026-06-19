@@ -1,8 +1,20 @@
 import type { DynamicAppIconRegistry } from "./types";
+import type { UseAppIcon } from "./useAppIcon";
+
+export { getAvailableIcons } from "./icons-data";
+export type { AppIconEntry } from "./icons-data";
+export type { UseAppIcon } from "./useAppIcon";
 
 export type IconName = DynamicAppIconRegistry["IconName"];
 
 export const DEFAULT_ICON = "DEFAULT" as const;
+
+/**
+ * Web has no launcher icon; the hook reports an unsupported, default state.
+ */
+export function useAppIcon(): UseAppIcon {
+  return { icon: null, setIcon: () => {}, isDefault: true, isSupported: false };
+}
 
 /**
  * Web has no launcher icon; this is a no-op that reports failure.

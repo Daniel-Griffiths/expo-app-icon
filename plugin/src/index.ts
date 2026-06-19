@@ -22,7 +22,7 @@ const withDynamicIcon: ConfigPlugin<IconPluginInput> = (config, input) => {
   const variants = resolveAppleVariants(Boolean(config.ios?.supportsTablet));
   const props = { icons, variants };
 
-  config = withTypedIconNames(config, icons);
+  config = withGeneratedIconData(config, icons);
 
   config = withAppleIconAssets(config, props);
   config = withAppleAlternateIcons(config, props);
@@ -35,17 +35,20 @@ const withDynamicIcon: ConfigPlugin<IconPluginInput> = (config, input) => {
 };
 
 /**
- * Rewrite the shipped `IconName` union in `build/types.d.ts` to the configured
- * icon keys, so `getAppIcon()` / `setAppIcon()` are typed to this project.
+ * Sync the shipped package to this project's icons:
+ *  - rewrite the `IconName` union in `build/types.d.ts` so `getAppIcon()` /
+ *    `setAppIcon()` / `getAvailableIcons()` are typed to the configured keys, and
+ *  - emit the `{ name, metadata }` list into `build/icons-data.generated.js` so
+ *    `getAvailableIcons()` returns it at runtime.
+ *
+ * Both files only exist in a built package, so writes are best-effort.
  */
-function withTypedIconNames(
+function withGeneratedIconData(
   config: ExportedConfig,
   icons: IconSet
 ): ExportedConfig {
-  const union =
-    Object.keys(icons)
-      .map((name) => `"${name}"`)
-      .join(" | ") || "string";
+  const names = Object.keys(icons);
+  const union = names.map((name) => `"${name}"`).join(" | ") || "string";
 
   const typesFile = path.join(PACKAGE_ROOT, "build", "types.d.ts");
   try {
@@ -56,6 +59,20 @@ function withTypedIconNames(
     );
   } catch {
     // The types file only exists in a built package; ignore when absent.
+  }
+
+  const iconData = names.map((name) => ({
+    name,
+    metadata: icons[name]?.metadata ?? {},
+  }));
+  const dataFile = path.join(PACKAGE_ROOT, "build", "icons-data.generated.js");
+  try {
+    fs.writeFileSync(
+      dataFile,
+      `export const ICON_DATA = ${JSON.stringify(iconData)};\n`
+    );
+  } catch {
+    // The build output only exists in a built package; ignore when absent.
   }
 
   return config;

@@ -35,6 +35,32 @@ describe("normalizeIconSet", () => {
     });
   });
 
+  it("expands the `image` convenience to both platforms", () => {
+    expect(normalizeIconSet({ red: { image: "./red.png" } })).toEqual({
+      red: { ios: "./red.png", android: "./red.png" },
+    });
+  });
+
+  it("lets ios/android override the `image` convenience", () => {
+    expect(
+      normalizeIconSet({ red: { image: "./red.png", android: "./red-a.png" } })
+    ).toEqual({ red: { ios: "./red.png", android: "./red-a.png" } });
+  });
+
+  it("carries metadata through untouched", () => {
+    expect(
+      normalizeIconSet({
+        red: { image: "./red.png", metadata: { label: "Red", isPremium: true } },
+      })
+    ).toEqual({
+      red: {
+        ios: "./red.png",
+        android: "./red.png",
+        metadata: { label: "Red", isPremium: true },
+      },
+    });
+  });
+
   it("expands a bare list into keyed entries shared across platforms", () => {
     expect(normalizeIconSet(["a.png", "b.png"])).toEqual({
       "0": { ios: "a.png", android: "a.png" },

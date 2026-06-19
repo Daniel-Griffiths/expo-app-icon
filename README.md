@@ -31,26 +31,25 @@ Add the plugin to your `app.json` config and declare your icons. Each icon is ju
 }
 ```
 
-The same image is used for both platforms by default. To use a different image per platform, pass an object instead:
+The same image is used for both platforms. For per-platform images, or to attach
+metadata (any key/value you want — labels, descriptions, premium flags, …), use the object form:
 
 ```json
 {
-  "expo": {
-    "plugins": [
-      [
-        "expo-app-icon",
-        {
-          "red": "./assets/icons/red.png",
-          "blue": {
-            "ios": "./assets/icons/blue-ios.png",
-            "android": "./assets/icons/blue-android.png"
-          }
-        }
-      ]
-    ]
+  "red": "./assets/icons/red.png",
+  "blue": {
+    "image": "./assets/icons/blue.png",
+    "metadata": { "label": "Blue", "description": "Cool blue", "isPremium": true }
+  },
+  "split": {
+    "ios": "./assets/icons/split-ios.png",
+    "android": "./assets/icons/split-android.png"
   }
 }
 ```
+
+- `image` sets both platforms; `ios` / `android` override it per platform.
+- `metadata` is passed straight through to `getAvailableIcons()` at runtime (it's ignored when generating the icons).
 
 Then create a new build (the plugin runs during prebuild):
 
@@ -60,15 +59,35 @@ npx expo prebuild --clean
 
 ## Usage
 
+Build a picker with the `useAppIcon` hook and `getAvailableIcons` — no per-app boilerplate or persistence needed (the native module is the source of truth):
+
+```tsx
+import { useAppIcon, getAvailableIcons } from "expo-app-icon";
+
+type Meta = { label: string; description?: string; isPremium?: boolean };
+
+function IconPicker() {
+  const { icon, setIcon, isDefault } = useAppIcon();
+
+  return getAvailableIcons<Meta>().map(({ name, metadata }) => (
+    <Pressable key={name} onPress={() => setIcon(name)}>
+      <Text>{metadata.label}{icon === name ? " ✓" : ""}</Text>
+    </Pressable>
+  ));
+}
+```
+
+- `icon` — the current icon key, or `null` for the default.
+- `setIcon(name | null)` — switch icons; pass `null` to reset to the default. (The iOS timing fix is built in.)
+- `isDefault` / `isSupported` — handy flags (`isSupported` is `false` on web).
+- `getAvailableIcons<Meta>()` — the configured icons + their metadata, typed to `Meta`.
+
+Or call the underlying functions directly:
+
 ```ts
 import { getAppIcon, setAppIcon } from "expo-app-icon";
 
-// Get the name of the current icon ("DEFAULT" when none is set)
-const current = getAppIcon();
-
-// Switch to one of your configured icons by key
+const current = getAppIcon(); // icon name, or "DEFAULT"
 setAppIcon("red");
-
-// Reset back to the default icon
-setAppIcon(null);
+setAppIcon(null); // reset to default
 ```

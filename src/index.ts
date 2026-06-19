@@ -1,6 +1,11 @@
 import type { DynamicAppIconRegistry } from "./types";
 import NativeAppIcon from "./ExpoAppIconChangerModule";
 
+export { useAppIcon } from "./useAppIcon";
+export type { UseAppIcon } from "./useAppIcon";
+export { getAvailableIcons } from "./icons-data";
+export type { AppIconEntry } from "./icons-data";
+
 /**
  * Union of the icon keys declared in the plugin config (widened to string when none).
  */

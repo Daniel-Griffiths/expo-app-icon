@@ -29,7 +29,9 @@ const APPLE_ICON_BLUEPRINTS: readonly AppleIconBlueprint[] = [
 /**
  * Coerce whatever the user placed in app config into a normalized icon map.
  * A bare array of image paths is expanded to keyed entries that share the same
- * image for both platforms.
+ * image for both platforms. For the object form, the `image` convenience is
+ * expanded to `ios`/`android` (which override it) and `metadata` is carried
+ * through untouched.
  */
 export function normalizeIconSet(input: IconPluginInput): IconSet {
   if (Array.isArray(input)) {
@@ -40,11 +42,19 @@ export function normalizeIconSet(input: IconPluginInput): IconSet {
   }
   if (!input) return {};
   return Object.fromEntries(
-    Object.entries(input).map(([key, value]) => [
-      key,
+    Object.entries(input).map(([key, value]) => {
       // String shorthand: one image path used for both platforms.
-      typeof value === "string" ? { ios: value, android: value } : value,
-    ])
+      if (typeof value === "string") {
+        return [key, { ios: value, android: value }];
+      }
+      const { image, ios, android, metadata } = value;
+      const config: IconConfig = {
+        ios: ios ?? image,
+        android: android ?? image,
+        ...(metadata ? { metadata } : {}),
+      };
+      return [key, config];
+    })
   );
 }
 
