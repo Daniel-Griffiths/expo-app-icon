@@ -5,6 +5,8 @@ import path from "path";
 import { withAndroidIconAliases, withAndroidIconResources } from "./android";
 import {
   withAppleAlternateIcons,
+  withAppleGlassIconAssets,
+  withAppleGlassIconBuildSettings,
   withAppleIconAssets,
   withAppleIconImages,
 } from "./apple";
@@ -27,6 +29,8 @@ const withDynamicIcon: ConfigPlugin<IconPluginInput> = (config, input) => {
   config = withAppleIconAssets(config, props);
   config = withAppleAlternateIcons(config, props);
   config = withAppleIconImages(config, props);
+  config = withAppleGlassIconAssets(config, props);
+  config = withAppleGlassIconBuildSettings(config, props);
 
   config = withAndroidIconAliases(config, icons);
   config = withAndroidIconResources(config, icons);

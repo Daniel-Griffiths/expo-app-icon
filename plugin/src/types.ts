@@ -1,16 +1,26 @@
 /**
- * A normalized icon entry as used everywhere internally (the `image`
- * convenience has been expanded to `ios`/`android`).
+ * A normalized icon entry as used everywhere internally.
+ *
+ * `ios` may point at either a flat `.png` or an Icon Composer `.icon` bundle
+ * (Liquid Glass). `android` is always a flat `.png`. `iosFallback` is the flat
+ * `.png` used to back an `.icon` iOS entry — it provides the bitmap the
+ * alternate-icon name is registered against and the icon shown on iOS versions
+ * that predate Liquid Glass. It equals `ios` when `ios` is itself a `.png`.
  */
 export type IconConfig = {
   /**
-   * Path to the iOS source image.
+   * Path to the iOS source image — a `.png` or an Icon Composer `.icon` bundle.
    */
   ios?: string;
   /**
-   * Path to the Android source image.
+   * Path to the Android source image (always a `.png`).
    */
   android?: string;
+  /**
+   * Flat `.png` backing the iOS entry. Same as `ios` for `.png` icons; the
+   * sibling/Android `.png` when `ios` is an `.icon` bundle.
+   */
+  iosFallback?: string;
 };
 
 /**
@@ -20,17 +30,21 @@ export type IconConfig = {
 export type IconSet = Record<string, IconConfig>;
 
 /**
- * The object form a consumer may declare. Adds `image` as a convenience that
- * sets both platforms (`ios`/`android` override it when present).
+ * The explicit object form a consumer may declare: a `.png` or `.icon` for
+ * iOS, and a `.png` for Android.
  */
-export type IconInputObject = IconConfig & {
-  /** Single image used for both platforms (shorthand for ios + android). */
-  image?: string;
+export type IconInputObject = {
+  /** iOS image — a `.png` or an Icon Composer `.icon` bundle. */
+  ios?: string;
+  /** Android image — a `.png`. */
+  android?: string;
 };
 
 /**
  * An icon as declared by the user: either a single image path used for both
- * platforms (`"red": "./assets/red.png"`) or the explicit object form.
+ * platforms (`"red": "./assets/red.png"`) or the explicit per-platform object
+ * form. When the single path is an `.icon`, the sibling `.png` (same basename)
+ * is used for Android and as the iOS fallback bitmap.
  */
 export type IconInput = string | IconInputObject;
 

@@ -16,13 +16,35 @@ describe("normalizeIconSet", () => {
 
   it("keeps the explicit per-platform object form", () => {
     expect(normalizeIconSet({ red: { ios: "a.png", android: "b.png" } })).toEqual({
-      red: { ios: "a.png", android: "b.png" },
+      red: { ios: "a.png", android: "b.png", iosFallback: "a.png" },
     });
   });
 
-  it("expands a string shorthand to both platforms", () => {
+  it("expands a .png string shorthand to both platforms", () => {
     expect(normalizeIconSet({ red: "./assets/red.png" })).toEqual({
-      red: { ios: "./assets/red.png", android: "./assets/red.png" },
+      red: {
+        ios: "./assets/red.png",
+        android: "./assets/red.png",
+        iosFallback: "./assets/red.png",
+      },
+    });
+  });
+
+  it("pairs a .icon string with its sibling .png for android + fallback", () => {
+    expect(normalizeIconSet({ glass: "./assets/glass.icon" })).toEqual({
+      glass: {
+        ios: "./assets/glass.icon",
+        android: "./assets/glass.png",
+        iosFallback: "./assets/glass.png",
+      },
+    });
+  });
+
+  it("uses the android .png as the fallback for an object-form .icon", () => {
+    expect(
+      normalizeIconSet({ glass: { ios: "./g.icon", android: "./g-a.png" } })
+    ).toEqual({
+      glass: { ios: "./g.icon", android: "./g-a.png", iosFallback: "./g-a.png" },
     });
   });
 
@@ -30,27 +52,27 @@ describe("normalizeIconSet", () => {
     expect(
       normalizeIconSet({ red: "./red.png", blue: { ios: "./blue-ios.png" } })
     ).toEqual({
-      red: { ios: "./red.png", android: "./red.png" },
-      blue: { ios: "./blue-ios.png" },
+      red: { ios: "./red.png", android: "./red.png", iosFallback: "./red.png" },
+      blue: { ios: "./blue-ios.png", iosFallback: "./blue-ios.png" },
     });
   });
 
-  it("expands the `image` convenience to both platforms", () => {
-    expect(normalizeIconSet({ red: { image: "./red.png" } })).toEqual({
-      red: { ios: "./red.png", android: "./red.png" },
-    });
+  it("throws when android is given a .icon bundle", () => {
+    expect(() =>
+      normalizeIconSet({ red: { ios: "./r.png", android: "./r.icon" } })
+    ).toThrow(/Android icon.*must be a \.png/);
   });
 
-  it("lets ios/android override the `image` convenience", () => {
-    expect(
-      normalizeIconSet({ red: { image: "./red.png", android: "./red-a.png" } })
-    ).toEqual({ red: { ios: "./red.png", android: "./red-a.png" } });
+  it("throws when an object .icon has no .png fallback", () => {
+    expect(() => normalizeIconSet({ glass: { ios: "./g.icon" } })).toThrow(
+      /needs a \.png fallback/
+    );
   });
 
   it("expands a bare list into keyed entries shared across platforms", () => {
     expect(normalizeIconSet(["a.png", "b.png"])).toEqual({
-      "0": { ios: "a.png", android: "a.png" },
-      "1": { ios: "b.png", android: "b.png" },
+      "0": { ios: "a.png", android: "a.png", iosFallback: "a.png" },
+      "1": { ios: "b.png", android: "b.png", iosFallback: "b.png" },
     });
   });
 });

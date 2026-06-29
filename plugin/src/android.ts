@@ -12,6 +12,7 @@ import fs from "fs";
 import path from "path";
 
 import type { IconSet } from "./types";
+import { assertSourceExists } from "./icons";
 import {
   ADAPTIVE_ICON_DIR,
   ANDROID_DENSITY_DIRS,
@@ -265,6 +266,7 @@ export const withAndroidIconResources: ConfigPlugin<IconSet> = (
 
       for (const [iconKey, { android }] of Object.entries(icons)) {
         if (!android) continue;
+        assertSourceExists(projectRoot, android, `Android icon for "${iconKey}"`);
 
         for (const densityDir of ANDROID_DENSITY_DIRS) {
           const canvasSize = ANDROID_DENSITY_SIZES[densityDir];

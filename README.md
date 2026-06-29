@@ -36,7 +36,6 @@ The same image is used for both platforms. For per-platform images, use the obje
 ```json
 {
   "red": "./assets/icons/red.png",
-  "blue": { "image": "./assets/icons/blue.png" },
   "split": {
     "ios": "./assets/icons/split-ios.png",
     "android": "./assets/icons/split-android.png"
@@ -44,7 +43,16 @@ The same image is used for both platforms. For per-platform images, use the obje
 }
 ```
 
-- `image` sets both platforms; `ios` / `android` override it per platform.
+For a Liquid Glass icon (iOS 26+), pass an Icon Composer `.icon`:
+
+```json
+{
+  "glass": "./assets/icons/glass.icon",
+  "frost": { "ios": "./assets/icons/frost.icon", "android": "./assets/icons/frost.png" }
+}
+```
+
+The sibling `.png` (e.g. `glass.png`) is used for Android and as the fallback on older iOS — it must exist.
 
 Then create a new build (the plugin runs during prebuild):
 
@@ -66,7 +74,10 @@ function IconPicker() {
 
   return ICONS.map((name) => (
     <Pressable key={name} onPress={() => setIcon(name)}>
-      <Text>{name}{icon === name ? " ✓" : ""}</Text>
+      <Text>
+        {name}
+        {icon === name ? " ✓" : ""}
+      </Text>
     </Pressable>
   ));
 }
