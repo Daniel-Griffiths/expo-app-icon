@@ -1,9 +1,7 @@
 import { useCallback, useState } from "react";
 
 import NativeAppIcon from "./ExpoAppIconChangerModule";
-import type { DynamicAppIconRegistry } from "./types";
-
-type IconName = DynamicAppIconRegistry["IconName"];
+import type { IconName } from "./types";
 
 /**
  * Read the current icon from the native module, normalising the default

@@ -62,7 +62,7 @@ npx expo prebuild --clean
 
 ## Usage
 
-Switch icons at runtime with the `useAppIcon` hook — no per-app persistence needed (the native module is the source of truth). `IconName` is typed to your configured keys:
+Switch icons at runtime with the `useAppIcon` hook — no per-app persistence needed (the native module is the source of truth). `IconName` is typed to your configured keys — the config plugin writes an `expo-app-icon-env.d.ts` into your project root on every `expo config` / prebuild / export (add it to `.gitignore` next to `expo-env.d.ts`; it augments the package's empty `DynamicAppIconRegistry`, so the installed package is never modified and every app in a monorepo keeps its own union). Until that first run, `IconName` is `string`.
 
 ```tsx
 import { useAppIcon, type IconName } from "expo-app-icon";

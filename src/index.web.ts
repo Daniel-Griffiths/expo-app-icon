@@ -1,9 +1,9 @@
-import type { DynamicAppIconRegistry } from "./types";
+import type { IconName } from "./types";
 import type { UseAppIcon } from "./useAppIcon";
 
 export type { UseAppIcon } from "./useAppIcon";
 
-export type IconName = DynamicAppIconRegistry["IconName"];
+export type { IconName } from "./types";
 
 export const DEFAULT_ICON = "DEFAULT" as const;
 

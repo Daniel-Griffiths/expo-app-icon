@@ -1,13 +1,10 @@
-import type { DynamicAppIconRegistry } from "./types";
+import type { IconName } from "./types";
 import NativeAppIcon from "./ExpoAppIconChangerModule";
 
 export { useAppIcon } from "./useAppIcon";
 export type { UseAppIcon } from "./useAppIcon";
 
-/**
- * Union of the icon keys declared in the plugin config (widened to string when none).
- */
-export type IconName = DynamicAppIconRegistry["IconName"];
+export type { IconName } from "./types";
 
 /**
  * Value reported / accepted for the project's default launcher icon.
