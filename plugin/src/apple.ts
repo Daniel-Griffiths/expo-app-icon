@@ -322,11 +322,27 @@ export const withAppleGlassIconBuildSettings: ConfigPlugin<ResolvedIconProps> = 
         (name) => `"${name}"`
       );
       buildSettings.ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = "YES";
+      buildSettings.ASSETCATALOG_EXEC = `"$(SRCROOT)/${actoolCachePath(
+        config.modRequest.platformProjectRoot
+      )}"`;
     }
 
     return config;
   });
 };
+
+/**
+ * Path of the caching actool front (`scripts/actool-cache/actool`), relative to
+ * the native project folder, so the generated project holds no absolute path.
+ * It has to be named `actool`: Xcode asks the tool for its version and reads
+ * the answer under a key built from the file name.
+ * Compiling `.icon` bundles is slow; the script replays an earlier identical
+ * compile instead of repeating it (see the script for what "identical" means).
+ */
+export function actoolCachePath(platformProjectRoot: string): string {
+  const script = path.resolve(__dirname, "../../scripts/actool-cache/actool");
+  return path.relative(platformProjectRoot, script).split(path.sep).join("/");
+}
 
 /** Strip surrounding quotes from a pbxproj scalar value. */
 function unquote(value: unknown): string {

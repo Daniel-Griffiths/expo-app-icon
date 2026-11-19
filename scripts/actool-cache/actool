@@ -1,0 +1,169 @@
+#!/bin/bash
+#
+# Caching front for Xcode's asset catalog compiler (actool), wired in by the
+# config plugin through the ASSETCATALOG_EXEC build setting.
+#
+# Compiling Icon Composer `.icon` bundles costs about a second per icon on every
+# clean build, and a store build is always a clean build. This script runs the
+# real actool the first time it sees a set of inputs and keeps everything it
+# wrote; an identical call later gets those files back without compiling.
+#
+# A call is identical when the working directory, every argument (so every
+# input and output path and every option), the content of every input file, and
+# the Xcode and macOS builds all match. Anything else, any call that is not a
+# compile, and any output this script cannot account for goes to actool as is.
+#
+# Environment:
+#   EXPO_APP_ICON_ACTOOL_CACHE=0        never cache, always run actool
+#   EXPO_APP_ICON_ACTOOL_CACHE_DIR      cache folder (default ~/Library/Caches/expo-app-icon/actool)
+#   EXPO_APP_ICON_ACTOOL_CACHE_MAX_MB   size the cache is pruned to (default 2048)
+#   EXPO_APP_ICON_ACTOOL                the real actool (default: the selected Xcode's)
+
+set -u
+
+developer_dir="${DEVELOPER_DIR:-}"
+if [ -z "$developer_dir" ]; then
+  developer_dir="$(/usr/bin/xcode-select -p 2>/dev/null)"
+fi
+real_actool="${EXPO_APP_ICON_ACTOOL:-$developer_dir/usr/bin/actool}"
+
+# Hands the call to actool untouched.
+passthrough() {
+  exec "$real_actool" "$@"
+}
+
+if [ "${EXPO_APP_ICON_ACTOOL_CACHE:-1}" = "0" ]; then
+  passthrough "$@"
+fi
+
+# Split the arguments: leading paths are the inputs, the rest are options. The
+# options that name an output are remembered so their files can be stored.
+inputs=()
+output_files=()
+compile_dir=""
+output_format=""
+seen_option=0
+previous=""
+for argument in "$@"; do
+  case "$previous" in
+    --compile) compile_dir="$argument" ;;
+    --output-format) output_format="$argument" ;;
+    --export-dependency-info | --output-partial-info-plist | --generate-swift-asset-symbols | --generate-objc-asset-symbols | --generate-asset-symbol-index)
+      output_files+=("$argument")
+      ;;
+  esac
+  case "$argument" in
+    --*) seen_option=1 ;;
+    *) [ "$seen_option" = "0" ] && inputs+=("$argument") ;;
+  esac
+  previous="$argument"
+done
+
+# Only a compile in the text format (the one that lists what was written) is cached.
+if [ -z "$compile_dir" ] || [ "$output_format" != "human-readable-text" ] || [ "${#inputs[@]}" = "0" ]; then
+  passthrough "$@"
+fi
+
+cache_root="${EXPO_APP_ICON_ACTOOL_CACHE_DIR:-$HOME/Library/Caches/expo-app-icon/actool}"
+max_megabytes="${EXPO_APP_ICON_ACTOOL_CACHE_MAX_MB:-2048}"
+
+# Prints the cache key of this call, or fails when an input cannot be read.
+cache_key() {
+  {
+    printf 'expo-app-icon actool cache 1\n'
+    printf '%s\n' "$PWD" "$real_actool"
+    /usr/bin/sw_vers -buildVersion 2>/dev/null
+    /bin/cat "$developer_dir/../version.plist" 2>/dev/null
+    printf '%s\0' "$@"
+    for input in "${inputs[@]}"; do
+      [ -e "$input" ] || return 1
+      (cd "$input" 2>/dev/null && /usr/bin/find . -type f ! -name .DS_Store -print0 | LC_ALL=C /usr/bin/sort -z | /usr/bin/xargs -0 /usr/bin/shasum -a 256) ||
+        /usr/bin/shasum -a 256 "$input" || return 1
+    done
+  } | /usr/bin/shasum -a 256 | /usr/bin/cut -d ' ' -f 1
+}
+
+key="$(cache_key "$@")" || passthrough "$@"
+[ -n "$key" ] || passthrough "$@"
+entry="$cache_root/$key"
+
+# Copies a file, as a copy-on-write clone where the volume allows it.
+copy_file() {
+  /bin/mkdir -p "$(/usr/bin/dirname "$2")" && { /bin/cp -c "$1" "$2" 2>/dev/null || /bin/cp "$1" "$2"; }
+}
+
+# Puts every stored file back where actool wrote it. Fails on the first problem.
+restore() {
+  local index=0 relative
+  while IFS= read -r relative; do
+    copy_file "$entry/compiled/$relative" "$compile_dir/$relative" || return 1
+  done <"$entry/compiled.list"
+  for output_file in ${output_files[@]+"${output_files[@]}"}; do
+    copy_file "$entry/outputs/$index" "$output_file" || return 1
+    index=$((index + 1))
+  done
+}
+
+if [ -f "$entry/complete" ]; then
+  if restore; then
+    /usr/bin/touch "$entry"
+    /bin/cat "$entry/stdout"
+    exit 0
+  fi
+fi
+
+# Miss: compile for real, and store the result only when it can be fully described.
+stdout_file="$(/usr/bin/mktemp -t expo-app-icon-actool)" || passthrough "$@"
+"$real_actool" "$@" >"$stdout_file"
+status=$?
+/bin/cat "$stdout_file"
+
+# Stores what actool wrote. Any surprise abandons the entry and leaves the build alone.
+store() {
+  local staging="$cache_root/.staging-$key-$$" index=0 line relative
+  /bin/rm -rf "$staging"
+  /bin/mkdir -p "$staging/compiled" "$staging/outputs" || return 1
+  /usr/bin/grep -q '^/\* com.apple.actool.compilation-results \*/$' "$stdout_file" || return 1
+  : >"$staging/compiled.list"
+  while IFS= read -r line; do
+    case "$line" in
+      "$compile_dir"/*)
+        relative="${line#"$compile_dir"/}"
+        [ -f "$line" ] || return 1
+        copy_file "$line" "$staging/compiled/$relative" || return 1
+        printf '%s\n' "$relative" >>"$staging/compiled.list"
+        ;;
+    esac
+  done <"$stdout_file"
+  for output_file in ${output_files[@]+"${output_files[@]}"}; do
+    [ -f "$output_file" ] || return 1
+    copy_file "$output_file" "$staging/outputs/$index" || return 1
+    index=$((index + 1))
+  done
+  /bin/cp "$stdout_file" "$staging/stdout" || return 1
+  : >"$staging/complete"
+  /bin/rm -rf "$entry"
+  /bin/mv "$staging" "$entry" || return 1
+}
+
+# Deletes the least recently used entries until the cache fits its size limit.
+prune() {
+  local total=0 size name
+  for name in $(/bin/ls -t "$cache_root" 2>/dev/null); do
+    size="$(/usr/bin/du -sk "$cache_root/$name" 2>/dev/null | /usr/bin/cut -f 1)"
+    total=$((total + ${size:-0}))
+    if [ "$total" -gt $((max_megabytes * 1024)) ] && [ "$name" != "$key" ]; then
+      /bin/rm -rf "${cache_root:?}/$name"
+    fi
+  done
+}
+
+if [ "$status" = "0" ]; then
+  if store; then
+    prune
+  else
+    /bin/rm -rf "$cache_root/.staging-$key-$$"
+  fi
+fi
+/bin/rm -f "$stdout_file"
+exit "$status"

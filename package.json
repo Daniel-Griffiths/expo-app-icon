@@ -1,6 +1,6 @@
 {
   "name": "expo-app-icon",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "Programmatically change the app icon at runtime in Expo, with Android adaptive-icon support.",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -9,6 +9,7 @@
     "android",
     "ios",
     "plugin/build",
+    "scripts",
     "app.plugin.js",
     "expo-module.config.json"
   ],

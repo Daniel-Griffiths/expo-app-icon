@@ -54,6 +54,13 @@ For a Liquid Glass icon (iOS 26+), pass an Icon Composer `.icon`:
 
 The sibling `.png` (e.g. `glass.png`) is used for Android and as the fallback on older iOS — it must exist.
 
+### Faster clean builds with `.icon` bundles
+
+Xcode's asset catalog compiler (`actool`) takes about a second per `.icon` on every clean build. When the config has `.icon` bundles, the plugin points the app target's `ASSETCATALOG_EXEC` build setting at `scripts/actool-cache/actool`, which runs the real `actool` once and replays its output on later builds whose inputs are identical: same icon and asset files, same options and paths, same Xcode and macOS build. Any other call goes to `actool` unchanged.
+
+- Cache: `~/Library/Caches/expo-app-icon/actool`, pruned to 2 GB (`EXPO_APP_ICON_ACTOOL_CACHE_DIR`, `EXPO_APP_ICON_ACTOOL_CACHE_MAX_MB`). Deleting it is safe.
+- Turn it off for a build with `EXPO_APP_ICON_ACTOOL_CACHE=0`.
+
 Then create a new build (the plugin runs during prebuild):
 
 ```sh
